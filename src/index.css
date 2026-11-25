@@ -424,7 +424,7 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none}
 .sugg mark{background:none;color:var(--orange);font-weight:700}
 .sugg .sh2{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:6px 10px 2px}
 .nsearch input:focus{box-shadow:0 0 0 4px rgba(142,22,22,.12)}
-.nsearch kbd{position:absolute;right:10px;top:9px;font:600 11px/1 inherit;border:1px solid var(--line);border-radius:6px;padding:4px 6px;color:var(--muted);background:var(--soft);pointer-events:none}
+.nsearch kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:600 11px/1 inherit;font-family:inherit;border:1px solid var(--line);border-radius:6px;padding:4px 7px;color:var(--muted);background:var(--soft);pointer-events:none}
 .nsearch input:focus ~ kbd{display:none}
 .saved{position:relative;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:.2s}
 .saved:hover{border-color:var(--orange);color:var(--orange)}
@@ -584,8 +584,8 @@ table.tb,table.pt{min-width:0}
  .mmenu .nsearch input{height:44px}
  .mmenu .nsearch kbd{display:none}
  .mmenu .sugg{min-width:0}
- .mmenu>button{text-align:left;padding:13px 6px;font-size:15px;font-weight:600;border-bottom:1px solid var(--line)}
- .mmenu>button:last-child{border-bottom:0}
+ .mmenu>button,.mmenu>a{display:block;text-align:left;padding:14px 6px;font-size:15px;font-weight:600;border-bottom:1px solid var(--line)}
+ .mmenu>button:last-child,.mmenu>a:last-child{border-bottom:0}
  .cats .wrap{padding-left:8px;padding-right:8px}
  .cats button{padding:13px 12px}
  .hero{padding:28px 0 20px}
