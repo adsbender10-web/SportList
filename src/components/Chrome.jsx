@@ -150,6 +150,7 @@ export function Nav() {
   const { go, saved, setSavedOnly, toast } = useApp()
   const [scrolled, setScrolled] = useState(false)
   const [bump, setBump] = useState(0)
+  const [menu, setMenu] = useState(false)
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
     onScroll()
@@ -167,6 +168,7 @@ export function Nav() {
       return
     }
     setSavedOnly(true)
+    setMenu(false)
     go('explore', 'all')
   }
   return (
@@ -192,8 +194,28 @@ export function Nav() {
           <Icon id={saved.length ? "i-heart-on" : "i-heart"} w={20} />
           <span>{saved.length}</span>
         </button>
-        <button className="btn btn-k btn-sm" onClick={() => go('owner')}>Sign in</button>
+        <button className="btn btn-k btn-sm signin" onClick={() => go('owner')}>Sign in</button>
+        <button className="ham" aria-label={menu ? 'Close menu' : 'Open menu'} aria-expanded={menu} onClick={() => setMenu((m) => !m)}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            {menu ? <path d="M6 6l12 12M18 6 6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
+          </svg>
+        </button>
       </div>
+      {menu && (
+        <div className="mmenu">
+          <SearchBox />
+          {[
+            ['home', 'Home'],
+            ['explore', 'Explore venues'],
+            ['blog', 'Guides'],
+            ['register', 'List your business'],
+            ['owner', 'Owner dashboard'],
+            ['admin', 'Admin panel'],
+          ].map(([p, label]) => (
+            <button key={p} onClick={() => { setMenu(false); go(p) }}>{label}</button>
+          ))}
+        </div>
+      )}
     </header>
   )
 }
