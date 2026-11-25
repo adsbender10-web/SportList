@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import A from '../components/A'
 import Icon from '../components/Icon'
 import Card, { BlogCard } from '../components/Card'
 import { Rv, CountUp, useApp } from '../hooks.jsx'
@@ -100,7 +101,7 @@ export default function Home() {
               <h2>Featured &amp; verified</h2>
               <p>Hand-checked by the SportList team.</p>
             </div>
-            <a onClick={() => go('explore')}>View all →</a>
+            <A page="explore">View all →</A>
           </Rv>
           <div className="grid3">
             {featured.map((b, i) => <Card key={b.id} b={b} i={i} />)}
@@ -140,7 +141,7 @@ export default function Home() {
               <h2>Top rated in Lucknow</h2>
               <p>Highest rated by players this month.</p>
             </div>
-            <a onClick={() => go('explore')}>See rankings →</a>
+            <A page="explore">See rankings →</A>
           </Rv>
           <div className="grid3">
             {top.map((b, i) => <Card key={b.id} b={b} i={i} />)}
@@ -154,7 +155,7 @@ export default function Home() {
             <div>
               <h2>Own a sports business? Get found by players.</h2>
               <p>List for free in five minutes. Upgrade to Premium for featured placement and lead analytics.</p>
-              <button className="btn" onClick={() => go('register')}>List your business →</button>
+              <A page="register" className="btn">List your business →</A>
             </div>
             <ul>
               <li>Free listing, always</li>
@@ -173,7 +174,7 @@ export default function Home() {
               <h2>Sports guides</h2>
               <p>Local advice for choosing where to play.</p>
             </div>
-            <a onClick={() => go('blog')}>All guides →</a>
+            <A page="blog">All guides →</A>
           </Rv>
           <div className="blogs">
             {BL.slice(0, 3).map((b, i) => <BlogCard key={b.t} b={b} i={i} />)}

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import A from './A'
 import Icon from './Icon'
 import { useApp } from '../hooks.jsx'
 import { D, ICON, CATEGORIES } from '../data'
@@ -20,10 +21,10 @@ export function PreviewBar() {
       <div className="wrap">
         <b>SportList · Design preview</b>
         {PAGES.map(([id, label], i) => (
-          <button key={id} className={page === id ? 'on' : ''} onClick={() => go(id)}>
+          <A key={id} page={id} className={page === id ? 'on' : ''}>
             <i>{String(i + 1).padStart(2, '0')}</i>
             {label}
-          </button>
+          </A>
         ))}
       </div>
     </div>
@@ -174,21 +175,21 @@ export function Nav() {
   return (
     <header className={`nav${scrolled ? ' scrolled' : ''}`}>
       <div className="wrap">
-        <a className="logo" style={{ cursor: 'pointer' }} onClick={() => go('home')}>
+        <A page="home" className="logo">
           <span className="mk">
             <svg viewBox="0 0 24 24" fill="#fff"><path d="M13 2 4 14h6l-1 8 9-12h-6z" /></svg>
           </span>
           SportList
-        </a>
+        </A>
         <SearchBox />
         <span className="city">
           <Icon id="i-pin" w={14} style={{ color: 'var(--orange)' }} />
           Lucknow ▾
         </span>
         <nav className="nlinks">
-          <a style={{ cursor: 'pointer' }} onClick={() => go('explore')}>Explore</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => go('blog')}>Guides</a>
-          <a style={{ cursor: 'pointer' }} onClick={() => go('register')}>List your business</a>
+          <A page="explore">Explore</A>
+          <A page="blog">Guides</A>
+          <A page="register">List your business</A>
         </nav>
         <button key={bump} className={`saved${saved.length ? ' has' : ''}${bump > 0 ? ' bump' : ''}`} aria-label="Saved venues" onClick={openSaved}>
           <Icon id={saved.length ? "i-heart-on" : "i-heart"} w={20} />
@@ -212,7 +213,7 @@ export function Nav() {
             ['owner', 'Owner dashboard'],
             ['admin', 'Admin panel'],
           ].map(([p, label]) => (
-            <button key={p} onClick={() => { setMenu(false); go(p) }}>{label}</button>
+            <A key={p} page={p} onClick={() => setMenu(false)}>{label}</A>
           ))}
         </div>
       )}
@@ -240,7 +241,7 @@ export function CatBar() {
 
 export function Footer() {
   const { go } = useApp()
-  const L = ({ page, cat, children }) => <a onClick={() => go(page, cat)}>{children}</a>
+  const L = ({ page, cat, children }) => <A page={page} cat={cat}>{children}</A>
   return (
     <footer>
       <div className="wrap">

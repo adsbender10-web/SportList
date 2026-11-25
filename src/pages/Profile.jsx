@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import A from '../components/A'
 import Icon from '../components/Icon'
 import Card from '../components/Card'
 import { Rv, useApp, useInView } from '../hooks.jsx'
@@ -212,7 +213,7 @@ export default function Profile() {
     <main className="page on">
       <div className="wrap">
         <Rv className="crumb">
-          <a onClick={() => go('home')}>Home</a> › <a onClick={() => go('explore', biz.c)}>{biz.c}</a> › <span>{biz.n}</span>
+          <A page="home">Home</A> › <A page="explore" cat={biz.c}>{biz.c}</A> › <span>{biz.n}</span>
         </Rv>
         <Rv className="gal">
           <div className="ph t-night big" onClick={() => setLb(0)}>
