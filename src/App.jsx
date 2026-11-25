@@ -13,7 +13,7 @@ import { D } from './data'
 import { parsePath, pathFor, TITLES } from './routes'
 
 const PAGES = { home: Home, explore: Explore, profile: Profile, register: Register, owner: Owner, admin: Admin, blog: Blog }
-const SHOW_CATS = ['home', 'explore', 'blog']
+const SHOW_CATS = ['explore', 'blog']
 
 function Shell() {
   const location = useLocation()

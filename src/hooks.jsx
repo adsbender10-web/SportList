@@ -48,6 +48,59 @@ export function Rv({ as: Tag = 'div', i = 0, className = '', children, ...rest }
   )
 }
 
+/* ---- Scroll-linked CSS variable (--p, 0..1) driven by one shared rAF loop ---- */
+const scrollEls = new Map()
+let scrollRaf = 0
+const clamp01 = (v) => Math.min(1, Math.max(0, v))
+function measureScroll() {
+  scrollRaf = 0
+  const vh = innerHeight
+  scrollEls.forEach((mode, el) => {
+    const r = el.getBoundingClientRect()
+    if (r.bottom < -vh || r.top > vh * 2) return
+    let p
+    if (mode === 'exit') p = scrollY / Math.max(1, r.height)
+    else if (mode === 'pin') {
+      const top = parseFloat(getComputedStyle(el.firstElementChild).top) || 0
+      p = (top - r.top) / Math.max(1, r.height - (vh - top))
+    } else if (mode === 'fill') p = (vh - r.top) / (vh * 0.6 + r.height * 0.5)
+    else p = (vh - r.top) / (vh + r.height)
+    el.style.setProperty('--p', clamp01(p).toFixed(4))
+  })
+}
+const onScrollVar = () => {
+  if (!scrollRaf) scrollRaf = requestAnimationFrame(measureScroll)
+}
+
+/**
+ * Sets --p on the element as it scrolls. Modes:
+ *  through: 0 when it enters at the bottom, 1 when it leaves at the top
+ *  fill:    0 on entering, 1 once its middle is ~40% up the screen
+ *  pin:     progress through a tall section whose first child is position:sticky
+ *  exit:    0 at page top, 1 once scrolled by the element's height (for the hero)
+ */
+export function useScrollVar(mode = 'through') {
+  const ref = useRef(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el || prefersReducedMotion()) return
+    if (!scrollEls.size) {
+      addEventListener('scroll', onScrollVar, { passive: true })
+      addEventListener('resize', onScrollVar)
+    }
+    scrollEls.set(el, mode)
+    onScrollVar()
+    return () => {
+      scrollEls.delete(el)
+      if (!scrollEls.size) {
+        removeEventListener('scroll', onScrollVar)
+        removeEventListener('resize', onScrollVar)
+      }
+    }
+  }, [mode])
+  return ref
+}
+
 /** Adds .in to an element once it is half visible (rating bars). */
 export function useInView(threshold = 0.5) {
   const ref = useRef(null)
