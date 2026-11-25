@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import A from '../components/A'
 import Icon from '../components/Icon'
 import Card from '../components/Card'
+import Venue3D from '../components/Venue3D'
 import { Rv, useApp, useInView } from '../hooks.jsx'
 import { D, fmt } from '../data'
 
 const TABS = [
   ['s-over', 'Overview'],
+  ['s-3d', '3D view'],
   ['s-svc', 'Services & Pricing'],
   ['s-ph', 'Photos'],
   ['s-rev', 'Reviews (186)'],
@@ -70,7 +72,7 @@ function Lightbox({ index, setIndex }) {
   )
 }
 
-function EnquiryForm({ biz, formRef, nameRef }) {
+function EnquiryForm({ biz, formRef, nameRef, pick, clearPick }) {
   const { toast } = useApp()
   const [v, setV] = useState({ name: '', phone: '', date: '', slot: '6–8 PM', msg: '' })
   const [err, setErr] = useState({})
@@ -89,6 +91,10 @@ function EnquiryForm({ biz, formRef, nameRef }) {
     if (v[k].trim() || err[k]) setErr((e) => ({ ...e, [k]: !tests[k](v[k]) }))
   }
   const today = new Date().toISOString().slice(0, 10)
+  // a pitch/court picked on the 3D map also sets the slot
+  useEffect(() => {
+    if (pick?.slot) setV((o) => ({ ...o, slot: pick.slot }))
+  }, [pick])
 
   const submit = (e) => {
     e.preventDefault()
@@ -104,14 +110,25 @@ function EnquiryForm({ biz, formRef, nameRef }) {
       setLoading(false)
       setV({ name: '', phone: '', date: '', slot: '6–8 PM', msg: '' })
       setSent(true)
-      toast('Enquiry sent to ' + biz.n)
+      toast('Enquiry sent to ' + biz.n + (pick ? ' for ' + pick.name : ''))
     }, 900)
   }
 
   return (
     <form className="eform" id="enq" ref={formRef} onSubmit={submit} noValidate>
       <h3>Send an enquiry</h3>
-      <div className="pr">From <b>{fmt(biz.p)}</b> / {biz.u}</div>
+      <div className="pr">From <b>{fmt(pick?.price ?? biz.p)}</b> / {biz.u}</div>
+      {pick ? (
+        <div className="pick3d">
+          <span className="dt" />
+          <div><b>{pick.name}</b><small>{pick.sub} · {v.slot}</small></div>
+          <button type="button" aria-label="Clear selection" onClick={clearPick}>✕</button>
+        </div>
+      ) : (
+        <a className="pick3d empty" href="#s-3d" onClick={(e) => { e.preventDefault(); document.getElementById('s-3d')?.scrollIntoView({ behavior: 'smooth' }) }}>
+          <Icon id="i-grid" w={15} /> Pick your exact spot on the 3D map →
+        </a>
+      )}
       <div className={`fld${err.name ? ' err' : ''}`}>
         <label>Your name</label>
         <input data-f="name" ref={nameRef} value={v.name} placeholder="Full name" onChange={(e) => upd('name', e.target.value)} onBlur={() => blur('name')} />
@@ -157,6 +174,7 @@ export default function Profile() {
   const biz = D.find((b) => b.id === bizId) || D[0]
   const [activeTab, setActiveTab] = useState('s-over')
   const [lb, setLb] = useState(null)
+  const [pick, setPick] = useState(null)
   const tabsRef = useRef(null)
   const formRef = useRef(null)
   const nameRef = useRef(null)
@@ -246,6 +264,7 @@ export default function Profile() {
           </div>
           <div className="pact">
             <a className="btn btn-o" href="#enq" onClick={(e) => { e.preventDefault(); scrollToForm() }}>Enquire Now</a>
+            <button className="btn btn-l" onClick={() => document.getElementById('s-3d')?.scrollIntoView({ behavior: 'smooth' })}><Icon id="i-grid" w={16} />3D view</button>
             <button className="btn btn-l" onClick={() => toast('Calling +91 98765 43210…')}><Icon id="i-phone" w={16} />Call</button>
             <button className="btn btn-wa" onClick={() => toast('Opening WhatsApp chat…')}><Icon id="i-wa" w={17} style={{ color: '#25D366' }} />WhatsApp</button>
           </div>
@@ -280,6 +299,23 @@ export default function Profile() {
                 <div><Icon id="i-pin" /><span><b>{biz.l}</b>Lucknow</span></div>
                 <div><Icon id="i-car" /><span><b>5.4 km</b>from city centre</span></div>
               </div>
+            </Rv>
+            <Rv className="blk b3d" id="s-3d">
+              <div className="b3h">
+                <div>
+                  <h2>Explore the venue in 3D</h2>
+                  <p>Drag to look around. Tap a {biz.c.replace(/s$/, '').toLowerCase()} spot to check it for your slot, then select it to book.</p>
+                </div>
+                {pick && <span className="b3sel">{pick.name} selected</span>}
+              </div>
+              <Venue3D
+                biz={biz}
+                selectedId={pick?.id ?? null}
+                onSelect={(u, slot) => {
+                  setPick(u ? { ...u, slot } : null)
+                  if (u) toast(u.name + ' selected · ' + slot)
+                }}
+              />
             </Rv>
             <Rv className="blk">
               <h2>Facilities</h2>
@@ -358,7 +394,7 @@ export default function Profile() {
           </div>
 
           <aside>
-            <EnquiryForm key={biz.id} biz={biz} formRef={formRef} nameRef={nameRef} />
+            <EnquiryForm key={biz.id} biz={biz} formRef={formRef} nameRef={nameRef} pick={pick} clearPick={() => setPick(null)} />
           </aside>
         </div>
       </div>

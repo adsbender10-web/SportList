@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import A from '../components/A'
 import Icon from '../components/Icon'
 import { BlogCard } from '../components/Card'
+import Venue3D, { SLOTS as SLOTS3D } from '../components/Venue3D'
 import { Rv, CountUp, useApp, useInView, useScrollVar } from '../hooks.jsx'
 import { D, BL, CATEGORIES, ICON, fmt } from '../data'
 import './home.css'
@@ -28,6 +29,7 @@ export default function Home() {
   return (
     <main className="page on hm">
       <Hero />
+      <Venue3DSection />
       <Trust />
       <Marquee />
       <Spotlight />
@@ -114,6 +116,58 @@ function Hero() {
           </div>
         </div>
       </div>
+    </section>
+  )
+}
+
+/* ---------- 1b. 3D venue preview ---------- */
+const PREVIEW_IDS = [1, 8, 10, 12, 6]
+
+function Venue3DSection() {
+  const { openBiz } = useApp()
+  const venues = useMemo(() => PREVIEW_IDS.map((id) => D.find((b) => b.id === id)), [])
+  const [vid, setVid] = useState(venues[0].id)
+  const [unit, setUnit] = useState(null)
+  const v = venues.find((b) => b.id === vid)
+  return (
+    <section className="hm-3d wrap">
+      <Rv className="hm-3d-head">
+        <div>
+          <small>3D venue preview</small>
+          <h2>Walk the venue before you book.</h2>
+          <p>Spin the map, check which pitch or court is free for your slot, and see the route from the gate.</p>
+        </div>
+        <div className="hm-3d-tabs" role="tablist" aria-label="Choose a venue">
+          {venues.map((b) => (
+            <button
+              key={b.id}
+              role="tab"
+              aria-selected={b.id === vid}
+              className={b.id === vid ? 'on' : ''}
+              onClick={() => {
+                setVid(b.id)
+                setUnit(null)
+              }}
+            >
+              <Icon id={ICON[b.c]} w={15} />
+              {SPORTS.find((s) => s.cat === b.c).label}
+            </button>
+          ))}
+        </div>
+      </Rv>
+      <Rv i={1} className="hm-3d-stage">
+        <Venue3D key={v.id} biz={v} selectedId={unit?.id ?? null} onSelect={(u, slot) => setUnit(u ? { ...u, slot } : null)} />
+        <div className="hm-3d-bar">
+          <span className="th" style={bg(v.t)} />
+          <div>
+            <b>{v.n}</b>
+            <small>{unit ? `${unit.name} · ${unit.slot} · ${fmt(unit.price)}/${unit.u}` : `${v.l}, Lucknow · ★ ${v.r}`}</small>
+          </div>
+          <button className="go" onClick={() => openBiz(v.id, !!unit)}>
+            {unit ? `Enquire for ${unit.name}` : 'View venue'} →
+          </button>
+        </div>
+      </Rv>
     </section>
   )
 }
@@ -213,6 +267,8 @@ function SportPicker() {
   const g = grounds.find((b) => b.id === gid) || grounds[0]
   const [day, setDay] = useState(0)
   const [slot, setSlot] = useState(null)
+  const [view, setView] = useState('photo')
+  const [unit, setUnit] = useState(null)
 
   const days = useMemo(() => {
     const t = new Date()
@@ -228,6 +284,7 @@ function SportPicker() {
     setSi(k)
     setGid(D.find((b) => b.c === SPORTS[k].cat).id)
     setSlot(null)
+    setUnit(null)
   }
   const centerCard = (k) => {
     const sc = scroller.current
@@ -291,6 +348,7 @@ function SportPicker() {
                   onClick={() => {
                     setGid(b.id)
                     setSlot(null)
+                    setUnit(null)
                   }}
                 >
                   <span className="th" style={bg(b.t)} />
@@ -302,14 +360,30 @@ function SportPicker() {
           </Rv>
 
           <Rv i={1} className="hm-panel hm-book">
-            <div key={g.id} className="cover" style={bg(g.t)}>
-              <span className="ic"><Icon id={ICON[g.c]} w={18} /></span>
-              <div>
-                <small>{g.c.replace(/s$/, '')}</small>
-                <b>{g.n}</b>
-                <span className="top">★ {g.r} · {g.rv} reviews</span>
-              </div>
+            <div className="vtabs" role="tablist" aria-label="Venue view">
+              {[['photo', 'Photo'], ['3d', '3D map']].map(([k, l]) => (
+                <button key={k} role="tab" aria-selected={view === k} className={view === k ? 'on' : ''} onClick={() => setView(k)}>{l}</button>
+              ))}
             </div>
+            {view === '3d' ? (
+              <Venue3D
+                compact
+                key={g.id}
+                biz={g}
+                slot={slot == null ? 1 : slot % SLOTS3D.length}
+                selectedId={unit?.id ?? null}
+                onSelect={(u) => setUnit(u)}
+              />
+            ) : (
+              <div key={g.id} className="cover" style={bg(g.t)}>
+                <span className="ic"><Icon id={ICON[g.c]} w={18} /></span>
+                <div>
+                  <small>{g.c.replace(/s$/, '')}</small>
+                  <b>{g.n}</b>
+                  <span className="top">★ {g.r} · {g.rv} reviews</span>
+                </div>
+              </div>
+            )}
             <div className="bd">
               <h4>Amenities</h4>
               <div className="am">
@@ -341,8 +415,8 @@ function SportPicker() {
               </div>
               <div className="ft">
                 <div>
-                  <small>Price</small>
-                  <b>{fmt(g.p)}</b>
+                  <small>{unit ? unit.name : 'Price'}</small>
+                  <b>{fmt(unit?.price ?? g.p)}</b>
                   <span>/ {g.u}</span>
                 </div>
                 <button
